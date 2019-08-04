@@ -1,44 +1,64 @@
-// Load data
-var friends = require("../data/friends");
+var friends = require("friends");
 
-// routing
 module.exports = function(app) {
- // API GET requests
- app.get("/api/friends", function(req, res) {
-  res.json(friends);
-  console.log("User Data: " + JSON.stringify(friends));
- });
+  app.get("/api/friends", function(req, res) {
+    res.json(friends);
+  });
 
- app.post("/api/friends", function(req, res) {
-  var newFriend = req.body;
-  var myScore = newFriend.scores;
-  var score = [];
-  for (var x = 0; x < myScore.length; x++) {
-   score.push(parseInt(newFriend.scores[x]));
+  app.post("/api/friends", function(req, res) {
+    var totalDifference = 0;
 
-  };
+    var bestMatch = {
+      name: "",
+      photo: "",
+      friendDifference: 1000
+    };
 
-  newFriend.scores = score;
-  var total = 0;
-  var issaMatch = 100;
-  var index = -1;
+    var userData = req.body;
+    var userName = userData.name;
+    var userScores = userData.scores;
 
-  for(var j = 0; j < friends.length; j++) {
-   total = 0;
-   for(var i = 0; i < myScore.length; i++) {
-    var dif = Math.abs(myScore[i] - friends[j].scores[i]);
-    total += dif;
-   };
+    var b = userScores.map(function(item) {
+      return parseInt(item, 10);
+    });
+    userData = {
+      name: req.body.name,
+      photo: req.body.photo,
+      scores: b
+    };
 
-   if(total < issaMatch) {
-    issaMatch = total;
-    index = j;
-   };
-  };
+    console.log("Name: " + userName);
+    console.log("User Score " + userScores);
 
-  friend.push(newFriend);
-  console.log(newFriend);
-  res.json(friends[index]);
-  console.log(friends[index]);
- });
+    var sum = b.reduce((a, b) => a + b, 0);
+
+    console.log("Sum of users score " + sum);
+    console.log("Best match friend diff " + bestMatch.friendDifference);
+    
+
+    for (var i = 0; i < friends.length; i++) {
+      console.log(friends[i].name);
+      totalDifference = 0;
+      console.log("Total Diff " + totalDifference);
+      console.log("Best match friend diff " + bestMatch.friendDifference);
+
+      var bfriendScore = friends[i].scores.reduce((a, b) => a + b, 0);
+      console.log("Total friend score " + bfriendScore);
+      totalDifference += Math.abs(sum - bfriendScore);
+      console.log(totalDifference);
+
+      if (totalDifference <= bestMatch.friendDifference) {
+        bestMatch.name = friends[i].name;
+        bestMatch.photo = friends[i].photo;
+        bestMatch.friendDifference = totalDifference;
+      }
+      console.log(totalDifference + " Total Difference");
+    }
+    console.log(bestMatch);
+
+    friends.push(userData);
+    console.log("New user added");
+    console.log(userData);
+    res.json(bestMatch);
+  });
 };
